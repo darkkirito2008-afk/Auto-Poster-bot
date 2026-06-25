@@ -67,59 +67,15 @@ def verify_callback(call):
         except Exception: 
             pass
 
-        image_path = "welcome.jpg" 
+        # Direct Catbox URL Configuration
+        image_url = "https://files.catbox.moe/sla8rd.jpg" 
         caption_text = (
             "🎉 <b>Success! Account Verified.</b>\n\n"
             "Welcome to the team! You can now send me any image, "
             "and I will instantly convert it into a watermarked poster for your channel."
         )
 
-        if os.path.exists(image_path):
-            with open(image_path, "rb") as photo:
-                bot.send_photo(chat_id=call.message.chat.id, photo=photo, caption=caption_text, parse_mode="HTML")
-        else:
-            bot.send_message(chat_id=call.message.chat.id, text=caption_text, parse_mode="HTML")
-    else:
-        bot.answer_callback_query(call.id, "❌ You still haven't joined the channel!", show_alert=True)
-
-# 4. Poster Generation Image Processing
-@bot.message_handler(content_types=['photo'])
-def handle_poster_generation(message):
-    user_id = message.from_user.id
-    if not check_user_joined(user_id):
-        bot.send_message(message.chat.id, "❌ Action Blocked!", reply_markup=get_force_sub_keyboard())
-        return
-
-    status_msg = bot.reply_to(message, "⏳ <i>Processing image and building poster...</i>", parse_mode="HTML")
-
-    try:
-        file_info = bot.get_file(message.photo[-1].file_id)
-        downloaded_file = bot.download_file(file_info.file_path)
-        
-        input_path = "/tmp/input_image.jpg"
-        output_path = "/tmp/output_poster.jpg"
-        
-        with open(input_path, 'wb') as f:
-            f.write(downloaded_file)
-
-        img = Image.open(input_path).convert("RGB")
-        draw = ImageDraw.Draw(img)
-        
-        width, height = img.size
-        font_size = max(20, int(height * 0.04)) 
-        font = ImageFont.load_default()
-
-        watermark_text = " @Anicore_Animes "
-        draw.rectangle([(0, height - font_size - 20), (width, height)], fill=(0, 0, 0, 160))
-        draw.text((20, height - font_size - 10), watermark_text, fill=(255, 255, 255), font=font)
-        img.save(output_path, "JPEG", quality=95)
-
-        with open(output_path, 'rb') as poster:
-            bot.send_photo(message.chat.id, poster, caption="<b>✅ Poster Created Successfully!</b>", parse_mode="HTML")
-            
-        bot.delete_message(message.chat.id, status_msg.message_id)
-        if os.path.exists(input_path): os.remove(input_path)
-        if os.path.exists(output_path): os.remove(output_path)
-
-    except Exception as e:
-        bot.edit_message_text(f"❌ Poster generation failed: {e}", message.chat.id, status_msg.message_id)
+        try:
+            bot.send_photo(chat_id=call.message.chat.id, photo=image_url, caption=caption_text, parse_mode="HTML")
+        except Exception:
+            bot.send_message(chat_id=call.message.chat.id, text=caption
